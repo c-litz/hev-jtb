@@ -10,23 +10,22 @@ get_script_dir <- function() {
     return(dirname(normalizePath(script_path)))
   }
   
-  # RStudio fallback
   if (requireNamespace("rstudioapi", quietly = TRUE) &&
       rstudioapi::isAvailable()) {
     return(dirname(rstudioapi::getActiveDocumentContext()$path))
   }
   
-  # last resort
   return(getwd())
 }
 
 
 # build data folder path relative to script
 script_dir <- get_script_dir()
-repo_root <- dir(script_dir)
+repo_root <- if (basename(script_dir) == "scripts") dirname(script_dir) else script_dir
 data_dir <- file.path(repo_root, "data")
 fig_dir <- file.path(repo_root, "figures")
 csv_file <- file.path(data_dir, "sensitivity_HEV_data.csv")
+csv_file <- csv_file[1]
 
 # check if the file exists
 if (!file.exists(csv_file)) {
@@ -149,3 +148,4 @@ if (!dir.exists(fig_dir)) {
 
 outname <- file.path(fig_dir, "Figure5.pdf")
 create_prcc_overall_plot(prcc_results, outname)
+
