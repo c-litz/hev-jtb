@@ -2,7 +2,6 @@ library(epiR)
 library(sensitivity)
 
 get_script_dir <- function() {
-  # Most reliable for Rscript: --file=...
   args <- commandArgs(trailingOnly = FALSE)
   file_arg <- grep("^--file=", args, value = TRUE)
   
@@ -17,7 +16,7 @@ get_script_dir <- function() {
     return(dirname(rstudioapi::getActiveDocumentContext()$path))
   }
   
-  # Last resort
+  # last resort
   return(getwd())
 }
 
