@@ -83,8 +83,8 @@ for j = 1:num_T
 end
 
 % output for trigger times: table with row=threshold & col=intervention name
-T = array2table(avg_trigger_times, 'row_names', compose("T=%d", all_thresholds), ...
-    'variable_names', all_interventions);
+T = array2table(avg_trigger_times, 'RowNames', compose("T=%d", all_thresholds), ...
+    'VariableNames', all_interventions);
 disp(T);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PLOTTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,22 +1,32 @@
 library(epiR)
 library(sensitivity)
 
-# find directory where script is located
-this_file_path <- tryCatch(
-  dirname(normalizePath(sys.frame(1)$ofile)),
-  error = function(e) NULL
-)
+get_script_dir <- function() {
+  # Most reliable for Rscript: --file=...
+  args <- commandArgs(trailingOnly = FALSE)
+  file_arg <- grep("^--file=", args, value = TRUE)
+  
+  if (length(file_arg) > 0) {
+    script_path <- sub("^--file=", "", file_arg[1])
+    return(dirname(normalizePath(script_path)))
+  }
+  
+  # RStudio fallback
+  if (requireNamespace("rstudioapi", quietly = TRUE) &&
+      rstudioapi::isAvailable()) {
+    return(dirname(rstudioapi::getActiveDocumentContext()$path))
+  }
+  
+  # Last resort
+  return(getwd())
+}
 
-# fallback if NULL
-if (is.null(this_file_path) && requireNamespace("rstudioapi", quietly = TRUE)) {
-  this_file_path <- dirname(rstudioapi::getActiveDocumentContext()$path)
-}
-if (is.null(this_file_path)) {
-  this_file_path <- getwd()
-}
 
 # build data folder path relative to script
-data_dir <- file.path(this_file_path, "..", "data")  # go up from 'scripts' to repo root, then into 'data'
+script_dir <- get_script_dir()
+repo_root <- dir(script_dir)
+data_dir <- file.path(repo_root, "data")
+fig_dir <- file.path(repo_root, "figures")
 csv_file <- file.path(data_dir, "sensitivity_HEV_data.csv")
 
 # check if the file exists
@@ -134,28 +144,9 @@ create_prcc_overall_plot <- function(prcc_results, outpath) {
   dev.off()
 }
 
-# detect current script directory (same logic as above)
-this_file_path <- tryCatch(
-  dirname(normalizePath(sys.frame(1)$ofile)),
-  error = function(e) NULL
-)
-
-if (is.null(this_file_path) && requireNamespace("rstudioapi", quietly = TRUE)) {
-  this_file_path <- dirname(rstudioapi::getActiveDocumentContext()$path)
-}
-if (is.null(this_file_path)) {
-  this_file_path <- getwd()
-}
-
-# build figures folder path relative to script location
-fig_dir <- file.path(this_file_path, "..", "figures")
-
-# create 'figures' folder if it doesn't exist
 if (!dir.exists(fig_dir)) {
   dir.create(fig_dir, recursive = TRUE)
 }
 
-# build full path for Figure5
 outname <- file.path(fig_dir, "Figure5.pdf")
 create_prcc_overall_plot(prcc_results, outname)
-

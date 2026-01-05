@@ -127,14 +127,14 @@ function analyze_HEV_results()
     end
 
     % create column for selected threshold and intervention pair
-    RR_current = table(rr_vec, 'variable_names', {sprintf('RR_T%d_I%d', chosen_T, intervention_col)});
+    RR_current = table(rr_vec, 'VariableNames', {sprintf('RR_T%d_I%d', chosen_T, intervention_col)});
     csv_filename = fullfile(data_dir, 'sensitivity_HEV_data.csv'); % append RR column to CSV file
 
     if isfile(csv_filename)
         sens_data = readtable(csv_filename);
         % remove any existing column for the current threshold and intervention to avoid duplicates
         col_to_remove = sprintf('RR_T%d_I%d', chosen_T, intervention_col);
-        if ismember(col_to_remove, sens_data.Properties.variable_names)
+        if ismember(col_to_remove, sens_data.Properties.VariableNames)
             sens_data.(col_to_remove) = [];
         end
         combined_data = [sens_data, RR_current];
