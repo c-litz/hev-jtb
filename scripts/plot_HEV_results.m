@@ -83,9 +83,8 @@ for j = 1:num_T
 end
 
 % output for trigger times: table with row=threshold & col=intervention name
-T = array2table(avg_trigger_times, ...
-    'RowNames',   compose("T=%d", all_thresholds), ...
-    'VariableNames', all_interventions);
+T = array2table(avg_trigger_times, 'row_names', compose("T=%d", all_thresholds), ...
+    'variable_names', all_interventions);
 disp(T);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PLOTTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -220,13 +219,13 @@ for T_plot = 1:2
 
         % background fill
         yl = [0 3];
-        numBins = 8;
-        binEdges = linspace(0, 1, numBins + 1);
-        cmap = jet(numBins);
+        num_bins = 8;
+        bin_edges = linspace(0, 1, num_bins + 1);
+        cmap = jet(num_bins);
         for i = 1:length(t)
             wval = WSI_downsampled(i);
-            [~, bin_idx] = histc(wval, binEdges);
-            bin_idx = min(max(bin_idx, 1), numBins);
+            [~, bin_idx] = histc(wval, bin_edges);
+            bin_idx = min(max(bin_idx, 1), num_bins);
             col = cmap(bin_idx, :);
             fill([t(i)-0.5 t(i)+0.5 t(i)+0.5 t(i)-0.5], [yl(1) yl(1) yl(2) yl(2)], ...
                 col, 'EdgeColor', 'none', 'FaceAlpha', 0.7, 'Parent', ax);
@@ -260,8 +259,10 @@ for T_plot = 1:2
                 'FontWeight','bold', 'FontSize', 11);
         end
 
-        % hide x-axis labels except bottom plot
-        if int_idx < num_plots
+        % x-axis labels
+        if int_idx == num_plots
+            xlabel(ax, 'Time (Weeks)', 'FontSize', 18);
+        else
             set(ax, 'XTickLabel', []);
         end
     end
@@ -272,13 +273,8 @@ for T_plot = 1:2
         'FontSize', 20, 'FontWeight','bold', 'EdgeColor','none');
 end
 
-% x=axis
-annotation(fig, 'textbox', 'String', 'Time (Weeks)', 'Units', 'normalized', ...
-    'Position', [0.38, 0.01, 0.25, 0.03], 'HorizontalAlignment','center', ...
-    'FontSize', 18, 'EdgeColor','none');
-
 % y-axis 
-y_label_ax = axes('Position', [0.01, 0.35, 0.03, 0.3], 'Visible', 'off');
+y_label_ax = axes('Position', [0.04, 0.35, 0.03, 0.3], 'Visible', 'off');
 text(0.5, 0.5, 'Proportion of Population Infected with Severe Disease (%)', ...
     'Units', 'normalized', 'HorizontalAlignment', 'center', ...
     'VerticalAlignment', 'middle', 'FontSize', 18, ...
@@ -293,7 +289,7 @@ cb.Label.Rotation = 90;
 cb.Label.FontSize = 18;
 
 % export
-fig_dir = fullfile(repo_root, 'figures');  % define figures directory
+fig_dir = fullfile(repo_root, 'figures');  % figures directory
 if ~exist(fig_dir, 'dir')
     mkdir(fig_dir);
 end
@@ -350,13 +346,13 @@ for T_plot = 1:2
 
         % background fill
         yl = [0 100];
-        numBins = 8;
-        binEdges = linspace(0, 1, numBins + 1);
-        cmap = jet(numBins);
+        num_bins = 8;
+        bin_edges = linspace(0, 1, num_bins + 1);
+        cmap = jet(num_bins);
         for i = 1:length(t)
             wval = WSI_downsampled(i);
-            [~, bin_idx] = histc(wval, binEdges);
-            bin_idx = min(max(bin_idx, 1), numBins);
+            [~, bin_idx] = histc(wval, bin_edges);
+            bin_idx = min(max(bin_idx, 1), num_bins);
             col = cmap(bin_idx, :);
             fill([t(i)-0.5 t(i)+0.5 t(i)+0.5 t(i)-0.5], [yl(1) yl(1) yl(2) yl(2)], ...
                 col, 'EdgeColor', 'none', 'FaceAlpha', 0.7, 'Parent', ax);
@@ -390,8 +386,10 @@ for T_plot = 1:2
                 'FontWeight','bold', 'FontSize', 11);
         end
 
-        % hide x-axis labels except bottom plot
-        if int_idx < num_plots
+        % x-axis labels
+        if int_idx == num_plots
+            xlabel(ax, 'Time (Weeks)', 'FontSize', 18);
+        else
             set(ax, 'XTickLabel', []);
         end
     end
@@ -402,13 +400,8 @@ for T_plot = 1:2
         'FontSize', 20, 'FontWeight','bold', 'EdgeColor','none');
 end
 
-% x-axis
-annotation(fig, 'textbox', 'String', 'Time (Weeks)', 'Units', 'normalized', ...
-    'Position', [0.38, 0.01, 0.25, 0.03], 'HorizontalAlignment','center', ...
-    'FontSize', 18, 'EdgeColor','none');
-
 % y-axis 
-y_label_ax = axes('Position', [0.01, 0.35, 0.03, 0.3], 'Visible', 'off');
+y_label_ax = axes('Position', [0.04, 0.35, 0.03, 0.3], 'Visible', 'off');
 text(0.5, 0.5, 'Proportion of Population Infected (%)', ...
     'Units', 'normalized', 'HorizontalAlignment', 'center', ...
     'VerticalAlignment', 'middle', 'FontSize', 18, ...
@@ -423,7 +416,7 @@ cb.Label.Rotation = 90;
 cb.Label.FontSize = 18;
 
 % export
-fig_dir = fullfile(repo_root, 'figures');  % define figures directory
+fig_dir = fullfile(repo_root, 'figures');  % figures directory
 if ~exist(fig_dir, 'dir')
     mkdir(fig_dir);
 end

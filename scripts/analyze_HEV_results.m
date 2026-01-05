@@ -67,15 +67,18 @@ function analyze_HEV_results()
 
     % compute aggregated metrics (from the averaged curves)
     total_inf_baseline = baseline_res.Cum_Inc(end);
-    total_inf_interv   = intervention_res.Cum_Inc(end);
+    total_inf_interv = intervention_res.Cum_Inc(end);
+    tot_prevented = total_inf_baseline - total_inf_interv;
     total_sev_baseline = baseline_res.Cum_IncIs(end);
-    total_sev_interv   = intervention_res.Cum_IncIs(end);
-    
+    total_sev_interv = intervention_res.Cum_IncIs(end);
+    sev_prevented = total_sev_baseline - total_sev_interv;
 
     fprintf('(1) Total cases baseline: %.4f\n', total_inf_baseline);
     fprintf('(1) Total cases intervention: %.4f\n', total_inf_interv);
+    fprintf('(1) Total cases prevented: %.4f\n', tot_prevented);
     fprintf('(1) Total severe cases baseline: %.4f\n', total_sev_baseline);
     fprintf('(1) Total severe cases intervention: %.4f\n', total_sev_interv);
+    fprintf('(1) Severe cases prevented: %.4f\n', sev_prevented);
     
     rel_reduction_sev = (total_sev_baseline - total_sev_interv) / total_sev_baseline * 100;
     rel_reduction_tot = (total_inf_baseline - total_inf_interv) / total_inf_baseline * 100;
@@ -109,8 +112,8 @@ function analyze_HEV_results()
     fprintf('Aggregated metrics saved to: %s\n', plot_file);
     
     % compute the relative reduction (RR) per simulation run for the chosen threshold
-    % all_local_results is assumed to be a 3x7 cell array where each cell contains a cell array of run structs
-    % use chosen threshold idx_T and baseline (col=1) and comparison intervention (2-7)
+    % all_local_results is a 3x7 cell array where each cell contains a cell array of run structs
+    % use chosen threshold idx_T and baseline (col=1) for comparing with interventions (2-7)
     num_runs = length(all_local_results{idx_T,1}); % number of runs for the chosen threshold
     rr_vec = zeros(num_runs, 1);
     for i = 1:num_runs
@@ -124,14 +127,14 @@ function analyze_HEV_results()
     end
 
     % create column for selected threshold and intervention pair
-    RR_current = table(rr_vec, 'VariableNames', {sprintf('RR_T%d_I%d', chosen_T, intervention_col)});
+    RR_current = table(rr_vec, 'variable_names', {sprintf('RR_T%d_I%d', chosen_T, intervention_col)});
     csv_filename = fullfile(data_dir, 'sensitivity_HEV_data.csv'); % append RR column to CSV file
 
     if isfile(csv_filename)
         sens_data = readtable(csv_filename);
         % remove any existing column for the current threshold and intervention to avoid duplicates
         col_to_remove = sprintf('RR_T%d_I%d', chosen_T, intervention_col);
-        if ismember(col_to_remove, sens_data.Properties.VariableNames)
+        if ismember(col_to_remove, sens_data.Properties.variable_names)
             sens_data.(col_to_remove) = [];
         end
         combined_data = [sens_data, RR_current];

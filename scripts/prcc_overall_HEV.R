@@ -47,7 +47,7 @@ for (i in interventions) {
   these_params <- params_for_intervention[[as.character(i)]]
   for (t in thresholds) {
     rr_col <- paste0("RR_T", t, "_I", i)
-    # subset only the relevant parameters plus the response column
+    # subset only relevant parameters plus the response column
     current_df <- df[, c(these_params, rr_col)]
     prcc_obj   <- epi.prcc(current_df, sided.test = 2, conf.level = 0.95)
     prcc_results[[paste0("I", i, "_T", t)]] <- prcc_obj

@@ -2,7 +2,6 @@ function run_HEV_model()
     tic
     rng(123);
 
-    % get folder containing this script and add to matlab path
     % get folder containing this script
     this_file_path = mfilename('fullpath');
     this_folder = fileparts(this_file_path);
@@ -57,14 +56,16 @@ function run_HEV_model()
     % parameters (defaults)
     theta = 0.0005;
     alpha = 0.9; % relative trans. of asymp. to symp. infection in water
+    zeta = 0.9; % relative trans. of mild symp. to sev symp. infection in water
     delta = 0.1; % default clearance rate (will be replaced by sampling)
     sigma = 7.0/34.0;
     gamma_a = 7.0/38.0;
     gamma_m = 7.0/38.0;
     gamma_s = 7.0/38.0;
     c_default = 1.0;
-    beta_h = 0.008; % human-to-human transmissibility % when alpha=0.2, beta_h=0.045 and beta_w=0.099
+    beta_h = 0.00547; % human-to-human transmissibility % when alpha=0.2, beta_h=0.045 and beta_w=0.099
     eta = 0.8; % relative trans. of asymp. to symp. (human-to-human)
+    kappa = 0.9; % relative transmission of mild to severe symptomatic (human-to-human)
     beta_w = 0.038; % water-to-human transmissibility
     p = 0.8; % proportion asymptomatic
     p_v_default = 0.96; % proportion asymptomatic post vaccine
@@ -89,9 +90,13 @@ function run_HEV_model()
     E_v0 = 0.0; R0 = 0.0; R1_0 = 0.0; R_pv0 = 0.0; SInc0 = 0.0; VInc0 = 0.0;
 
     % reproduction number using default parameters
-    R_0 = ( beta_h * (((p*eta)/gamma_a) + (m*(1-p)/gamma_m) + ((m-1)*(p-1)/gamma_s)) ) + ...
-          ( (S0*beta_w*theta)/delta ) * ( (p*alpha)/gamma_a + (m*(1-p)/gamma_m) + ((m-1)*(p-1)/gamma_s) );
+    R_0 = ( beta_h * (((p*eta)/gamma_a) + (m*(1-p)*kappa/gamma_m) + ((m-1)*(p-1)/gamma_s)) ) + ...
+          ( (S0*beta_w*theta)/delta ) * ( (p*alpha)/gamma_a + (m*(1-p)*zeta/gamma_m) + ((m-1)*(p-1)/gamma_s) );
+    R_h = beta_h * (((p*eta)/gamma_a) + (m*(1-p)*kappa/gamma_m) + ((m-1)*(p-1)/gamma_s));
+    R_e = ((S0*beta_w*theta)/delta) * ((p*alpha)/gamma_a + (m*(1-p)*zeta/gamma_m) + ((m-1)*(p-1)/gamma_s));
     fprintf('Estimated R_0 (default) = %.3f\n', R_0);
+    fprintf('Estimated Contribution to R_0 from Human Transmission (R_h) = %.3f\n', R_h);
+    fprintf('Estimated Contribution to R_0 from Environmental Transmission (R_e) = %.3f\n', R_e);
 
     % set up time (weeks)
     dt = 1.0/8.0;
@@ -276,14 +281,14 @@ function run_HEV_model()
     
                 % implicit Euler updates
                 theta_eff = theta * (1 - wepsilon_vec(k));
-                shedding = theta_eff * (alpha*A_n + alpha*A_sv_n + I_m_n +I_mv_n + I_s_n + I_sv_n);
-                force = beta_h * ((eta*A_n + eta*A_sv_n + I_m_n + I_mv_n + I_s_n + I_sv_n) / N) + beta_w * W_n;
+                shedding = theta_eff * (alpha*A_n + alpha*A_sv_n + zeta*I_m_n + zeta*I_mv_n + I_s_n + I_sv_n);
+                force = beta_h * ((eta*A_n + eta*A_sv_n + kappa*I_m_n + kappa*I_mv_n + I_s_n + I_sv_n) / N) + beta_w * W_n;
     
                 % compute u(t, rho)
                 delayed_index_rho = max(1, k - round(rho/dt));
                 current_integral = 0;
                 for idx_R = delayed_index_rho:(k-1)
-                    force_idx = beta_h * ((eta*A_vec(idx_R) + eta*A_sv_vec(idx_R) + I_m_vec(idx_R) + I_mv_vec(idx_R) + I_s_vec(idx_R) + I_sv_vec(idx_R)) / N) + beta_w * W_vec(idx_R);
+                    force_idx = beta_h * ((eta*A_vec(idx_R) + eta*A_sv_vec(idx_R) + kappa*I_m_vec(idx_R) + kappa*I_mv_vec(idx_R) + I_s_vec(idx_R) + I_sv_vec(idx_R)) / N) + beta_w * W_vec(idx_R);
                     current_integral = current_integral + force_idx * dt;
                 end
                 u_t_rho = nu_vec(delayed_index_rho) * exp(-current_integral);
@@ -337,10 +342,10 @@ function run_HEV_model()
             if vacc_vec_total(end) > 0
                 wasted_fraction = vacc_vec_wasted(end) / vacc_vec_total(end);
             else
-                wasted_fraction = 0; % or NaN if we want to flag as undefined
+                wasted_fraction = 0;
             end
 
-            % cumsums
+            % cumulative sums
             Cum_Inc_vec = cumsum(weekly_Inc);
             Cum_IncIs_vec = cumsum(weekly_IncIs);
             Cum_IncIsQ_vec = cumsum(weekly_IncIsQ);
