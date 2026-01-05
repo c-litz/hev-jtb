@@ -66,7 +66,7 @@ function run_HEV_model()
     beta_h = 0.00547; % human-to-human transmissibility % when alpha=0.2, beta_h=0.045 and beta_w=0.099
     eta = 0.8; % relative trans. of asymp. to symp. (human-to-human)
     kappa = 0.9; % relative transmission of mild to severe symptomatic (human-to-human)
-    beta_w = 0.038; % water-to-human transmissibility
+    beta_w = 0.026; % water-to-human transmissibility
     p = 0.8; % proportion asymptomatic
     p_v_default = 0.96; % proportion asymptomatic post vaccine
     % q = 0.7; % proportion isolated
